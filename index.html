@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Генератор случайных чисел</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 500px;
+            margin: 40px auto;
+            background: #1a1a2e;
+            color: #eee;
+        }
+        h1 {
+            text-align: center;
+            color: #e94560;
+        }
+        #current {
+            font-size: 80px;
+            text-align: center;
+            color: #0f3460;
+            background: #e94560;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th {
+            background: #0f3460;
+            padding: 10px;
+            text-align: center;
+        }
+        td {
+            padding: 8px;
+            text-align: center;
+            border-bottom: 1px solid #333;
+        }
+        tr:nth-child(even) { background: #16213e; }
+        tr:nth-child(odd)  { background: #1a1a2e; }
+        #count {
+            text-align: center;
+            color: #aaa;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Случайные числа</h1>
+    <div id="current">—</div>
+    <div id="count">Сгенерировано: 0</div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Число</th>
+                <th>Время</th>
+            </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+    </table>
+
+    <script>
+        let count = 0;
+
+        function generate() {
+            const num = Math.floor(Math.random() * 100) + 1;
+            const now = new Date().toLocaleTimeString('ru-RU');
+            count++;
+
+            document.getElementById('current').textContent = num;
+            document.getElementById('count').textContent = 'Сгенерировано: ' + count;
+
+            const tbody = document.getElementById('tbody');
+            const row = document.createElement('tr');
+            row.innerHTML = `<td>${count}</td><td><b>${num}</b></td><td>${now}</td>`;
+            tbody.insertBefore(row, tbody.firstChild);
+
+            // Оставляем только последние 50 записей
+            while (tbody.rows.length > 50) {
+                tbody.deleteRow(tbody.rows.length - 1);
+            }
+        }
+
+        generate();
+        setInterval(generate, 1000);
+    </script>
+</body>
+</html>
