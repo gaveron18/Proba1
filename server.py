@@ -9,7 +9,8 @@ import json
 from datetime import datetime
 from aiohttp import web, ClientSession
 
-DB       = '/home/new/Proba1/data.db'
+import os
+DB       = os.path.join(os.path.dirname(__file__), 'data.db')
 METAR_URL = 'https://aviationweather.gov/api/data/metar?ids=USPP&format=json'
 RUNWAYS  = [('03', 30), ('21', 210)]
 PREFERRED = '21'
