@@ -8,34 +8,35 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: Arial, sans-serif;
-            background: #0a0e1a;
-            color: #e0e6f0;
+            background: #f0f4f8;
+            color: #1a2535;
             min-height: 100vh;
             padding: 20px;
         }
         h1 {
             text-align: center;
-            color: #7ec8e3;
+            color: #1a6fa8;
             font-size: 20px;
             margin-bottom: 4px;
         }
         .subtitle {
             text-align: center;
-            color: #555;
+            color: #888;
             font-size: 13px;
             margin-bottom: 20px;
         }
         .main-card {
-            background: #131929;
+            background: #fff;
             border-radius: 12px;
             padding: 24px;
             max-width: 500px;
             margin: 0 auto 20px;
             text-align: center;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
         }
         .runway-label {
             font-size: 13px;
-            color: #888;
+            color: #aaa;
             letter-spacing: 2px;
             text-transform: uppercase;
             margin-bottom: 6px;
@@ -57,9 +58,9 @@
         .rwy-num.error   { font-size: 28px; color: #ef5350; padding: 30px 0; }
         .rwy-num.calm    { font-size: 60px; color: #ffb74d; padding: 10px 0; }
         .rwy-num.vrb     { font-size: 60px; color: #ce93d8; padding: 10px 0; }
-        .rwy-tag.rwy21, .rwy-num.rwy21 { color: #4fc3f7; }
-        .rwy-tag.rwy03, .rwy-num.rwy03 { color: #81c784; }
-        .rwy-tag.calm, .rwy-tag.vrb, .rwy-tag.error, .rwy-tag.loading { color: #555; }
+        .rwy-tag.rwy21, .rwy-num.rwy21 { color: #1a6fa8; }
+        .rwy-tag.rwy03, .rwy-num.rwy03 { color: #2e8b57; }
+        .rwy-tag.calm, .rwy-tag.vrb, .rwy-tag.error, .rwy-tag.loading { color: #bbb; }
         .heading-sub {
             font-size: 15px;
             color: #aaa;
@@ -73,20 +74,20 @@
             margin: 16px 0;
         }
         .wind-block { text-align: center; min-width: 60px; }
-        .wind-value { font-size: 26px; font-weight: bold; color: #fff; }
-        .wind-key   { font-size: 11px; color: #555; margin-top: 2px; }
+        .wind-value { font-size: 26px; font-weight: bold; color: #1a2535; }
+        .wind-key   { font-size: 11px; color: #aaa; margin-top: 2px; }
         .compass-wrap {
             margin: 16px auto 0;
             display: flex;
             justify-content: center;
         }
         .metar-box {
-            background: #0a0e1a;
+            background: #f0f4f8;
             border-radius: 6px;
             padding: 10px;
             font-family: monospace;
             font-size: 12px;
-            color: #7ec8e3;
+            color: #1a6fa8;
             word-break: break-all;
             margin-top: 14px;
             text-align: left;
@@ -94,12 +95,12 @@
         }
         .updated {
             font-size: 11px;
-            color: #444;
+            color: #aaa;
             margin-top: 8px;
         }
         .next-update {
             font-size: 12px;
-            color: #555;
+            color: #bbb;
             margin-top: 4px;
         }
         .history {
@@ -107,7 +108,7 @@
             margin: 0 auto;
         }
         .history h2 {
-            color: #888;
+            color: #aaa;
             font-size: 13px;
             letter-spacing: 1px;
             margin-bottom: 10px;
@@ -117,7 +118,7 @@
             display: inline-block;
             width: 8px; height: 8px;
             border-radius: 50%;
-            background: #4caf50;
+            background: #2e8b57;
             animation: pulse 2s infinite;
             margin-right: 6px;
             vertical-align: middle;
@@ -128,8 +129,8 @@
         }
         table { width: 100%; border-collapse: collapse; }
         th {
-            background: #131929;
-            color: #7ec8e3;
+            background: #e4ecf4;
+            color: #1a6fa8;
             padding: 8px 10px;
             font-size: 12px;
             text-align: center;
@@ -137,10 +138,10 @@
         td {
             padding: 7px 10px;
             text-align: center;
-            border-bottom: 1px solid #1a2035;
+            border-bottom: 1px solid #e8eef5;
             font-size: 13px;
         }
-        tr:nth-child(even) td { background: #0e1422; }
+        tr:nth-child(even) td { background: #f7fafc; }
         .badge {
             display: inline-block;
             padding: 2px 8px;
@@ -148,10 +149,10 @@
             font-weight: bold;
             font-size: 13px;
         }
-        .badge.rwy21 { background: #0d3a4f; color: #4fc3f7; }
-        .badge.rwy03 { background: #1a3a1a; color: #81c784; }
-        .badge.calm  { background: #3a2a00; color: #ffb74d; }
-        .badge.vrb   { background: #2a1a3a; color: #ce93d8; }
+        .badge.rwy21 { background: #dceef8; color: #1a6fa8; }
+        .badge.rwy03 { background: #d8f0e0; color: #2e8b57; }
+        .badge.calm  { background: #fff3e0; color: #e65100; }
+        .badge.vrb   { background: #f3e5f5; color: #7b1fa2; }
         .legend {
             display: flex;
             gap: 16px;
@@ -173,7 +174,7 @@
             margin: 30px auto 0;
         }
         .db-section h2 {
-            color: #888;
+            color: #aaa;
             font-size: 13px;
             letter-spacing: 1px;
             margin-bottom: 12px;
@@ -186,11 +187,11 @@
             flex-wrap: wrap;
             margin-bottom: 12px;
         }
-        .filter-row label { font-size: 12px; color: #666; }
+        .filter-row label { font-size: 12px; color: #888; }
         .filter-row input[type="datetime-local"] {
-            background: #131929;
-            border: 1px solid #2a3a4a;
-            color: #e0e6f0;
+            background: #fff;
+            border: 1px solid #cdd8e3;
+            color: #1a2535;
             border-radius: 6px;
             padding: 6px 10px;
             font-size: 12px;
@@ -198,8 +199,8 @@
             min-width: 160px;
         }
         .btn {
-            background: #1a3a5a;
-            color: #7ec8e3;
+            background: #1a6fa8;
+            color: #fff;
             border: none;
             border-radius: 6px;
             padding: 7px 16px;
@@ -207,7 +208,7 @@
             cursor: pointer;
             white-space: nowrap;
         }
-        .btn:hover { background: #1e4a70; }
+        .btn:hover { background: #155d8e; }
         .stats-row {
             display: flex;
             gap: 12px;
@@ -215,19 +216,20 @@
             flex-wrap: wrap;
         }
         .stat-card {
-            background: #131929;
+            background: #fff;
             border-radius: 8px;
             padding: 10px 16px;
             flex: 1;
             text-align: center;
             min-width: 100px;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.07);
         }
         .stat-num { font-size: 28px; font-weight: bold; }
-        .stat-num.rwy21 { color: #4fc3f7; }
-        .stat-num.rwy03 { color: #81c784; }
-        .stat-num.total { color: #aaa; }
-        .stat-key { font-size: 11px; color: #555; margin-top: 2px; }
-        .db-empty { text-align: center; color: #444; padding: 20px; font-size: 13px; }
+        .stat-num.rwy21 { color: #1a6fa8; }
+        .stat-num.rwy03 { color: #2e8b57; }
+        .stat-num.total { color: #888; }
+        .stat-key { font-size: 11px; color: #aaa; margin-top: 2px; }
+        .db-empty { text-align: center; color: #aaa; padding: 20px; font-size: 13px; }
     </style>
 </head>
 <body>
@@ -267,8 +269,8 @@
     </div>
 
     <div class="legend">
-        <span><span class="legend-line" style="background:#4fc3f7"></span>ВПП 21 (210°)</span>
-        <span><span class="legend-line" style="background:#81c784"></span>ВПП 03 (030°)</span>
+        <span><span class="legend-line" style="background:#1a6fa8"></span>ВПП 21 (210°)</span>
+        <span><span class="legend-line" style="background:#2e8b57"></span>ВПП 03 (030°)</span>
         <span><span class="legend-line" style="background:#ef5350;"></span>Ветер (откуда)</span>
     </div>
 
@@ -388,8 +390,8 @@ function drawCompass(windDir, activeHeading, activeCls) {
     }
 
     // Outer ring
-    svg.appendChild(el('circle', { r: 72, fill: '#0a0e1a', stroke: '#2a3a4a', 'stroke-width': 2 }));
-    svg.appendChild(el('circle', { r: 56, fill: 'none', stroke: '#1a2535', 'stroke-width': 1 }));
+    svg.appendChild(el('circle', { r: 72, fill: '#f0f4f8', stroke: '#c8d8e8', 'stroke-width': 2 }));
+    svg.appendChild(el('circle', { r: 56, fill: 'none', stroke: '#dce8f0', 'stroke-width': 1 }));
 
     // Degree ticks (every 30°)
     for (let deg = 0; deg < 360; deg += 30) {
@@ -398,7 +400,7 @@ function drawCompass(windDir, activeHeading, activeCls) {
         svg.appendChild(el('line', {
             x1: Math.cos(rad) * r1, y1: Math.sin(rad) * r1,
             x2: Math.cos(rad) * r2, y2: Math.sin(rad) * r2,
-            stroke: '#2a3a4a', 'stroke-width': 1
+            stroke: '#c8d8e8', 'stroke-width': 1
         }));
     }
 
@@ -407,7 +409,7 @@ function drawCompass(windDir, activeHeading, activeCls) {
         const rad = (deg - 90) * Math.PI / 180;
         const t = el('text', {
             x: Math.cos(rad) * 48, y: Math.sin(rad) * 48 + 4,
-            'text-anchor': 'middle', fill: '#445', 'font-size': 11
+            'text-anchor': 'middle', fill: '#aab', 'font-size': 11
         });
         t.textContent = label;
         svg.appendChild(t);
@@ -419,10 +421,10 @@ function drawCompass(windDir, activeHeading, activeCls) {
     svg.appendChild(el('line', {
         x1: Math.cos(rwyRad03) * 52, y1: Math.sin(rwyRad03) * 52,
         x2: Math.cos(rwyRad21) * 52, y2: Math.sin(rwyRad21) * 52,
-        stroke: '#1e3a1e', 'stroke-width': 8, 'stroke-linecap': 'round'
+        stroke: '#c8dfc8', 'stroke-width': 8, 'stroke-linecap': 'round'
     }));
     // Runway labels
-    [['03', rwyRad03, '#81c784'], ['21', rwyRad21, '#4fc3f7']].forEach(([name, rad, color]) => {
+    [['03', rwyRad03, '#2e8b57'], ['21', rwyRad21, '#1a6fa8']].forEach(([name, rad, color]) => {
         const t = el('text', {
             x: Math.cos(rad) * 58, y: Math.sin(rad) * 58 + 4,
             'text-anchor': 'middle', fill: color,
@@ -435,7 +437,7 @@ function drawCompass(windDir, activeHeading, activeCls) {
     // Active runway arrow
     if (activeHeading !== null) {
         const rad = (activeHeading - 90) * Math.PI / 180;
-        const color = activeCls === 'rwy21' ? '#4fc3f7' : '#81c784';
+        const color = activeCls === 'rwy21' ? '#1a6fa8' : '#2e8b57';
         const ax = Math.cos(rad) * 44, ay = Math.sin(rad) * 44;
         svg.appendChild(el('line', {
             x1: -ax * 0.7, y1: -ay * 0.7,
@@ -622,7 +624,11 @@ async function loadDB() {
 (function initDatePickers() {
     const now  = new Date();
     const from = new Date(now - 24 * 3600 * 1000);
-    const fmt  = d => d.toISOString().slice(0, 16);
+    // Use LOCAL time for datetime-local inputs (not UTC)
+    const fmt  = d => {
+        const off = d.getTimezoneOffset();
+        return new Date(d.getTime() - off * 60000).toISOString().slice(0, 16);
+    };
     document.getElementById('fromDt').value = fmt(from);
     document.getElementById('toDt').value   = fmt(now);
     // Auto-load DB history on page open
