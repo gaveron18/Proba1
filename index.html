@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>USPP — Курс посадки</title>
+    <title>USPP — Курс посадки (ВПП 03/21)</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -38,21 +38,28 @@
             color: #888;
             letter-spacing: 2px;
             text-transform: uppercase;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
-        .runway-display {
-            font-size: 72px;
+        .runway-block { line-height: 1; margin-bottom: 4px; }
+        .rwy-tag {
+            font-size: 18px;
             font-weight: bold;
-            color: #fff;
-            line-height: 1;
-            margin-bottom: 4px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-bottom: 2px;
         }
-        .runway-display.rwy27 { color: #4fc3f7; }
-        .runway-display.rwy09 { color: #81c784; }
-        .runway-display.calm  { color: #ffb74d; font-size: 36px; padding: 16px 0; }
-        .runway-display.vrb   { color: #ce93d8; font-size: 36px; padding: 16px 0; }
-        .runway-display.error { color: #ef5350; font-size: 28px; padding: 16px 0; }
-        .runway-display.loading { color: #555; font-size: 28px; padding: 16px 0; }
+        .rwy-num {
+            font-size: 130px;
+            font-weight: 900;
+            line-height: 1;
+        }
+        .rwy-num.loading { font-size: 28px; color: #555; padding: 30px 0; }
+        .rwy-num.error   { font-size: 28px; color: #ef5350; padding: 30px 0; }
+        .rwy-num.calm    { font-size: 60px; color: #ffb74d; padding: 10px 0; }
+        .rwy-num.vrb     { font-size: 60px; color: #ce93d8; padding: 10px 0; }
+        .rwy-tag.rwy21, .rwy-num.rwy21 { color: #4fc3f7; }
+        .rwy-tag.rwy03, .rwy-num.rwy03 { color: #81c784; }
+        .rwy-tag.calm, .rwy-tag.vrb, .rwy-tag.error, .rwy-tag.loading { color: #555; }
         .heading-sub {
             font-size: 15px;
             color: #aaa;
@@ -141,8 +148,8 @@
             font-weight: bold;
             font-size: 13px;
         }
-        .badge.rwy27 { background: #0d3a4f; color: #4fc3f7; }
-        .badge.rwy09 { background: #1a3a1a; color: #81c784; }
+        .badge.rwy21 { background: #0d3a4f; color: #4fc3f7; }
+        .badge.rwy03 { background: #1a3a1a; color: #81c784; }
         .badge.calm  { background: #3a2a00; color: #ffb74d; }
         .badge.vrb   { background: #2a1a3a; color: #ce93d8; }
         .legend {
@@ -165,11 +172,14 @@
 <body>
 
 <h1>✈ Аэропорт Большое Савино — Пермь</h1>
-<p class="subtitle">ICAO: USPP · ВПП 09/27 (090°/270°) · Обновление каждую минуту</p>
+<p class="subtitle">ICAO: USPP · ВПП 03/21 (030°/210°) · Обновление каждую минуту</p>
 
 <div class="main-card">
     <div class="runway-label">Активная ВПП</div>
-    <div class="runway-display loading" id="rwyDisplay">Загрузка...</div>
+    <div class="runway-block">
+        <div class="rwy-tag loading" id="rwyTag">ВПП</div>
+        <div class="rwy-num loading" id="rwyNum">—</div>
+    </div>
     <div class="heading-sub" id="headingSub"></div>
 
     <div class="wind-info">
@@ -196,8 +206,8 @@
     </div>
 
     <div class="legend">
-        <span><span class="legend-line" style="background:#4fc3f7"></span>ВПП 27 (270°)</span>
-        <span><span class="legend-line" style="background:#81c784"></span>ВПП 09 (090°)</span>
+        <span><span class="legend-line" style="background:#4fc3f7"></span>ВПП 21 (210°)</span>
+        <span><span class="legend-line" style="background:#81c784"></span>ВПП 03 (030°)</span>
         <span><span class="legend-line" style="background:#ef5350;"></span>Ветер (откуда)</span>
     </div>
 
@@ -211,7 +221,7 @@
     <table>
         <thead>
             <tr>
-                <th>#</th><th>Время</th><th>ВПП</th><th>Ветер</th><th>Скорость</th>
+                <th>#</th><th>Время</th><th>Посадка</th><th>Взлёт</th><th>Ветер</th><th>Скорость</th>
             </tr>
         </thead>
         <tbody id="histBody"></tbody>
@@ -219,10 +229,10 @@
 </div>
 
 <script>
-// Runway definitions for USPP
+// Runway definitions for USPP (Bolshoye Savino, Perm)
 const RUNWAYS = [
-    { name: '09', heading: 90  },
-    { name: '27', heading: 270 }
+    { name: '03', heading: 30  },
+    { name: '21', heading: 210 }
 ];
 
 let updateCount = 0;
@@ -234,13 +244,25 @@ function angleDiff(a, b) {
     return d > 180 ? 360 - d : d;
 }
 
+// Preferred runway when calm or variable wind
+const PREFERRED_RWY = RUNWAYS.find(r => r.name === '21');
+
 function getActiveRunway(windDir, windSpd, isVariable) {
-    if (isVariable) {
-        return { name: 'ПЕРЕМ.', cls: 'vrb', heading: null, headwind: 0 };
+    // Calm or variable — use preferred runway
+    if (isVariable || windSpd === 0 || windDir == null) {
+        const rwy = PREFERRED_RWY;
+        return {
+            name:      'ВПП ' + rwy.name,
+            cls:       'rwy' + rwy.name,
+            heading:   rwy.heading,
+            rwyNum:    rwy.name,
+            headwind:  0,
+            crosswind: 0,
+            isCalm:    true,
+            isVrb:     isVariable
+        };
     }
-    if (windSpd === 0 || windDir == null) {
-        return { name: 'ШТИЛЬ', cls: 'calm', heading: null, headwind: 0 };
-    }
+    // Pick runway with best headwind component
     let best = null, bestDiff = 999;
     for (const rwy of RUNWAYS) {
         const diff = angleDiff(windDir, rwy.heading);
@@ -254,7 +276,8 @@ function getActiveRunway(windDir, windSpd, isVariable) {
         rwyNum:    best.name,
         headwind:  Math.round(windSpd * Math.cos(rad)),
         crosswind: Math.round(Math.abs(windSpd * Math.sin(rad))),
-        angleDiff: bestDiff
+        isCalm:    false,
+        isVrb:     false
     };
 }
 
@@ -295,28 +318,29 @@ function drawCompass(windDir, activeHeading, activeCls) {
         svg.appendChild(t);
     });
 
-    // Runway line (east-west, 09/27)
+    // Runway line (03/21 = 030°/210°)
+    const rwyRad03 = (30 - 90) * Math.PI / 180;  // heading 030°
+    const rwyRad21 = (210 - 90) * Math.PI / 180; // heading 210°
     svg.appendChild(el('line', {
-        x1: Math.cos(0) * 50, y1: 0,   // east (90° - 90° = 0 rad)
-        x2: -Math.cos(0) * 50, y2: 0,  // west
+        x1: Math.cos(rwyRad03) * 52, y1: Math.sin(rwyRad03) * 52,
+        x2: Math.cos(rwyRad21) * 52, y2: Math.sin(rwyRad21) * 52,
         stroke: '#1e3a1e', 'stroke-width': 8, 'stroke-linecap': 'round'
     }));
     // Runway labels
-    ['09','27'].forEach((rwy, i) => {
-        const x = i === 0 ? 52 : -52;
+    [['03', rwyRad03, '#81c784'], ['21', rwyRad21, '#4fc3f7']].forEach(([name, rad, color]) => {
         const t = el('text', {
-            x, y: 4, 'text-anchor': 'middle',
-            fill: i === 0 ? '#81c784' : '#4fc3f7',
+            x: Math.cos(rad) * 58, y: Math.sin(rad) * 58 + 4,
+            'text-anchor': 'middle', fill: color,
             'font-size': 9, 'font-weight': 'bold'
         });
-        t.textContent = rwy;
+        t.textContent = name;
         svg.appendChild(t);
     });
 
     // Active runway arrow
     if (activeHeading !== null) {
         const rad = (activeHeading - 90) * Math.PI / 180;
-        const color = activeCls === 'rwy27' ? '#4fc3f7' : '#81c784';
+        const color = activeCls === 'rwy21' ? '#4fc3f7' : '#81c784';
         const ax = Math.cos(rad) * 44, ay = Math.sin(rad) * 44;
         svg.appendChild(el('line', {
             x1: -ax * 0.7, y1: -ay * 0.7,
@@ -370,17 +394,22 @@ async function fetchMETAR() {
         const active = getActiveRunway(windDir, windSpd, isVariable);
 
         // Update display
-        const disp = document.getElementById('rwyDisplay');
-        disp.textContent = active.name;
-        disp.className = 'runway-display ' + active.cls;
+        const rwyTag = document.getElementById('rwyTag');
+        const rwyNum = document.getElementById('rwyNum');
+        rwyTag.textContent = 'ВПП';
+        rwyTag.className = 'rwy-tag ' + active.cls;
+        rwyNum.textContent = active.rwyNum;
+        rwyNum.className = 'rwy-num ' + active.cls;
 
-        if (active.heading) {
+        if (active.isCalm && active.isVrb) {
+            document.getElementById('headingSub').textContent =
+                `Курс ${active.heading}° · Переменный ветер — предпочтительная полоса`;
+        } else if (active.isCalm) {
+            document.getElementById('headingSub').textContent =
+                `Курс ${active.heading}° · Штиль — предпочтительная полоса`;
+        } else {
             document.getElementById('headingSub').textContent =
                 `Курс посадки ${active.heading}° · Боковой ветер ${active.crosswind} уз`;
-        } else if (active.cls === 'vrb') {
-            document.getElementById('headingSub').textContent = 'Переменный ветер — ВПП по решению диспетчера';
-        } else {
-            document.getElementById('headingSub').textContent = 'Ветер отсутствует — любая ВПП';
         }
 
         document.getElementById('windDir').textContent =
@@ -399,9 +428,9 @@ async function fetchMETAR() {
         addHistory(active, windDir, windSpd, isVariable);
 
     } catch (e) {
-        const disp = document.getElementById('rwyDisplay');
-        disp.textContent = 'Нет связи';
-        disp.className = 'runway-display error';
+        document.getElementById('rwyTag').className = 'rwy-tag error';
+        document.getElementById('rwyNum').textContent = 'ERR';
+        document.getElementById('rwyNum').className = 'rwy-num error';
         document.getElementById('headingSub').textContent = '';
         document.getElementById('metarRaw').textContent = 'Ошибка: ' + e.message;
         drawCompass(null, null, null);
@@ -414,11 +443,13 @@ function addHistory(active, windDir, windSpd, isVariable) {
     const now = new Date().toLocaleTimeString('ru-RU');
     const windStr = isVariable ? 'VRB' : (windSpd === 0 ? 'Штиль' : windDir + '°');
     const spdStr  = windSpd + ' уз';
+    const rwyBadge = `<span class="badge ${active.cls}">${active.name}</span>`;
     const row = document.createElement('tr');
     row.innerHTML = `
         <td>${updateCount}</td>
         <td>${now}</td>
-        <td><span class="badge ${active.cls}">${active.name}</span></td>
+        <td>${rwyBadge}</td>
+        <td>${rwyBadge}</td>
         <td>${windStr}</td>
         <td>${spdStr}</td>
     `;
