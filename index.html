@@ -167,6 +167,67 @@
             height: 3px;
             border-radius: 2px;
         }
+        /* DB History section */
+        .db-section {
+            max-width: 500px;
+            margin: 30px auto 0;
+        }
+        .db-section h2 {
+            color: #888;
+            font-size: 13px;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+        .filter-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+        .filter-row label { font-size: 12px; color: #666; }
+        .filter-row input[type="datetime-local"] {
+            background: #131929;
+            border: 1px solid #2a3a4a;
+            color: #e0e6f0;
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 12px;
+            flex: 1;
+            min-width: 160px;
+        }
+        .btn {
+            background: #1a3a5a;
+            color: #7ec8e3;
+            border: none;
+            border-radius: 6px;
+            padding: 7px 16px;
+            font-size: 13px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .btn:hover { background: #1e4a70; }
+        .stats-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        .stat-card {
+            background: #131929;
+            border-radius: 8px;
+            padding: 10px 16px;
+            flex: 1;
+            text-align: center;
+            min-width: 100px;
+        }
+        .stat-num { font-size: 28px; font-weight: bold; }
+        .stat-num.rwy21 { color: #4fc3f7; }
+        .stat-num.rwy03 { color: #81c784; }
+        .stat-num.total { color: #aaa; }
+        .stat-key { font-size: 11px; color: #555; margin-top: 2px; }
+        .db-empty { text-align: center; color: #444; padding: 20px; font-size: 13px; }
     </style>
 </head>
 <body>
@@ -217,7 +278,7 @@
 </div>
 
 <div class="history">
-    <h2><span class="dot"></span>История обновлений</h2>
+    <h2><span class="dot"></span>Текущая сессия</h2>
     <table>
         <thead>
             <tr>
@@ -226,6 +287,40 @@
         </thead>
         <tbody id="histBody"></tbody>
     </table>
+</div>
+
+<div class="db-section">
+    <h2>🗄 История из базы данных</h2>
+    <div class="filter-row">
+        <label>С</label>
+        <input type="datetime-local" id="fromDt">
+        <label>По</label>
+        <input type="datetime-local" id="toDt">
+        <button class="btn" onclick="loadDB()">Загрузить</button>
+    </div>
+    <div class="stats-row" id="statsRow" style="display:none">
+        <div class="stat-card">
+            <div class="stat-num rwy21" id="statRwy21">—</div>
+            <div class="stat-key">ВПП 21 (записей)</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-num rwy03" id="statRwy03">—</div>
+            <div class="stat-key">ВПП 03 (записей)</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-num total" id="statTotal">—</div>
+            <div class="stat-key">Всего записей</div>
+        </div>
+    </div>
+    <table id="dbTable" style="display:none">
+        <thead>
+            <tr>
+                <th>Время (UTC)</th><th>Посадка</th><th>Взлёт</th><th>Ветер</th><th>Скорость</th>
+            </tr>
+        </thead>
+        <tbody id="dbBody"></tbody>
+    </table>
+    <div class="db-empty" id="dbEmpty">Выберите период и нажмите «Загрузить»</div>
 </div>
 
 <script>
@@ -466,6 +561,73 @@ function startCountdown() {
             'Следующее обновление через ' + Math.max(0, countdown) + ' сек';
     }, 1000);
 }
+
+// ── DB History ──────────────────────────────────────────────────────────────
+
+function toUTC(localStr) {
+    // datetime-local gives local time, convert to UTC ISO string
+    if (!localStr) return '';
+    return new Date(localStr).toISOString().replace('.000Z', 'Z');
+}
+
+async function loadDB() {
+    const from = toUTC(document.getElementById('fromDt').value);
+    const to   = toUTC(document.getElementById('toDt').value);
+    if (!from || !to) { alert('Выберите период'); return; }
+
+    document.getElementById('dbEmpty').textContent = 'Загрузка...';
+    document.getElementById('dbTable').style.display = 'none';
+    document.getElementById('statsRow').style.display = 'none';
+
+    try {
+        const [histResp, statsResp] = await Promise.all([
+            fetch(`/proba1/api/history?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`),
+            fetch(`/proba1/api/stats?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`)
+        ]);
+        const rows  = await histResp.json();
+        const stats = await statsResp.json();
+
+        // Stats
+        document.getElementById('statRwy21').textContent = stats.runways['21'] || 0;
+        document.getElementById('statRwy03').textContent = stats.runways['03'] || 0;
+        document.getElementById('statTotal').textContent = stats.total || 0;
+        document.getElementById('statsRow').style.display = 'flex';
+
+        // Table
+        const tbody = document.getElementById('dbBody');
+        tbody.innerHTML = '';
+        if (!rows.length) {
+            document.getElementById('dbEmpty').textContent = 'Нет данных за выбранный период';
+            return;
+        }
+        rows.forEach(r => {
+            const cls   = 'rwy' + r.runway;
+            const badge = `<span class="badge ${cls}">ВПП ${r.runway}</span>`;
+            const wind  = r.is_vrb ? 'VRB' : (r.is_calm ? 'Штиль' : (r.wind_dir + '°'));
+            const spd   = (r.wind_spd || 0) + (r.wind_gst ? `г${r.wind_gst}` : '') + ' уз';
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${r.ts.replace('T',' ').replace('Z','')}</td><td>${badge}</td><td>${badge}</td><td>${wind}</td><td>${spd}</td>`;
+            tbody.appendChild(tr);
+        });
+        document.getElementById('dbTable').style.display = 'table';
+        document.getElementById('dbEmpty').style.display = 'none';
+
+    } catch (e) {
+        document.getElementById('dbEmpty').textContent = 'Ошибка загрузки: ' + e.message;
+        document.getElementById('dbEmpty').style.display = 'block';
+    }
+}
+
+// Set default datetime range — last 24 hours, then auto-load
+(function initDatePickers() {
+    const now  = new Date();
+    const from = new Date(now - 24 * 3600 * 1000);
+    const fmt  = d => d.toISOString().slice(0, 16);
+    document.getElementById('fromDt').value = fmt(from);
+    document.getElementById('toDt').value   = fmt(now);
+    // Auto-load DB history on page open
+    setTimeout(loadDB, 1500);
+})();
 
 // Start
 fetchMETAR();
