@@ -252,15 +252,15 @@
         </div>
         <div class="wind-block">
             <div class="wind-value" id="windSpd">—</div>
-            <div class="wind-key">Скорость (уз)</div>
+            <div class="wind-key">Скорость (м/с)</div>
         </div>
         <div class="wind-block">
             <div class="wind-value" id="windGst">—</div>
-            <div class="wind-key">Порыв (уз)</div>
+            <div class="wind-key">Порыв (м/с)</div>
         </div>
         <div class="wind-block">
             <div class="wind-value" id="headwind">—</div>
-            <div class="wind-key">Встречный (уз)</div>
+            <div class="wind-key">Встречный (м/с)</div>
         </div>
     </div>
 
@@ -335,6 +335,9 @@ const RUNWAYS = [
 let updateCount = 0;
 let countdown = 60;
 let countdownTimer = null;
+
+// 1 knot = 0.514444 m/s
+function kts2ms(kts) { return Math.round(kts * 0.514444 * 10) / 10; }
 
 function angleDiff(a, b) {
     let d = Math.abs(a - b) % 360;
@@ -506,14 +509,14 @@ async function fetchMETAR() {
                 `Курс ${active.heading}° · Штиль — предпочтительная полоса`;
         } else {
             document.getElementById('headingSub').textContent =
-                `Курс посадки ${active.heading}° · Боковой ветер ${active.crosswind} уз`;
+                `Курс посадки ${active.heading}° · Боковой ветер ${kts2ms(active.crosswind)} м/с`;
         }
 
         document.getElementById('windDir').textContent =
             isVariable ? 'VRB' : (windSpd === 0 ? 'Штиль' : (windDir + '°'));
-        document.getElementById('windSpd').textContent = windSpd + ' уз';
-        document.getElementById('windGst').textContent = windGst ? windGst + ' уз' : '—';
-        document.getElementById('headwind').textContent = active.headwind ? active.headwind + ' уз' : '—';
+        document.getElementById('windSpd').textContent = kts2ms(windSpd) + ' м/с';
+        document.getElementById('windGst').textContent = windGst ? kts2ms(windGst) + ' м/с' : '—';
+        document.getElementById('headwind').textContent = active.headwind ? kts2ms(active.headwind) + ' м/с' : '—';
         document.getElementById('metarRaw').textContent = rawOb;
 
         const now = new Date();
@@ -539,7 +542,7 @@ function addHistory(active, windDir, windSpd, isVariable) {
     const tbody = document.getElementById('histBody');
     const now = new Date().toLocaleTimeString('ru-RU');
     const windStr = isVariable ? 'VRB' : (windSpd === 0 ? 'Штиль' : windDir + '°');
-    const spdStr  = windSpd + ' уз';
+    const spdStr  = kts2ms(windSpd) + ' м/с';
     const rwyBadge = `<span class="badge ${active.cls}">${active.name}</span>`;
     const row = document.createElement('tr');
     row.innerHTML = `
@@ -606,7 +609,7 @@ async function loadDB() {
             const cls   = 'rwy' + r.runway;
             const badge = `<span class="badge ${cls}">ВПП ${r.runway}</span>`;
             const wind  = r.is_vrb ? 'VRB' : (r.is_calm ? 'Штиль' : (r.wind_dir + '°'));
-            const spd   = (r.wind_spd || 0) + (r.wind_gst ? `г${r.wind_gst}` : '') + ' уз';
+            const spd   = kts2ms(r.wind_spd || 0) + (r.wind_gst ? ` (пор. ${kts2ms(r.wind_gst)})` : '') + ' м/с';
             const tr = document.createElement('tr');
             tr.innerHTML = `<td>${r.ts.replace('T',' ').replace('Z','')}</td><td>${badge}</td><td>${badge}</td><td>${wind}</td><td>${spd}</td>`;
             tbody.appendChild(tr);
