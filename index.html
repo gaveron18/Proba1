@@ -2,94 +2,444 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Генератор случайных чисел</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>USPP — Курс посадки</title>
     <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: Arial, sans-serif;
-            max-width: 500px;
-            margin: 40px auto;
-            background: #f5f5f5;
-            color: #333;
+            background: #0a0e1a;
+            color: #e0e6f0;
+            min-height: 100vh;
+            padding: 20px;
         }
         h1 {
             text-align: center;
-            color: #0f3460;
+            color: #7ec8e3;
+            font-size: 20px;
+            margin-bottom: 4px;
         }
-        #current {
-            font-size: 80px;
+        .subtitle {
             text-align: center;
-            color: #fff;
-            background: #e94560;
-            border-radius: 10px;
-            padding: 20px;
-            margin: 20px 0;
+            color: #555;
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+        .main-card {
+            background: #131929;
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 500px;
+            margin: 0 auto 20px;
+            text-align: center;
+        }
+        .runway-label {
+            font-size: 13px;
+            color: #888;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        .runway-display {
+            font-size: 72px;
             font-weight: bold;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th {
-            background: #0f3460;
             color: #fff;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+        .runway-display.rwy27 { color: #4fc3f7; }
+        .runway-display.rwy09 { color: #81c784; }
+        .runway-display.calm  { color: #ffb74d; font-size: 36px; padding: 16px 0; }
+        .runway-display.vrb   { color: #ce93d8; font-size: 36px; padding: 16px 0; }
+        .runway-display.error { color: #ef5350; font-size: 28px; padding: 16px 0; }
+        .runway-display.loading { color: #555; font-size: 28px; padding: 16px 0; }
+        .heading-sub {
+            font-size: 15px;
+            color: #aaa;
+            margin-bottom: 16px;
+            min-height: 22px;
+        }
+        .wind-info {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 16px 0;
+        }
+        .wind-block { text-align: center; min-width: 60px; }
+        .wind-value { font-size: 26px; font-weight: bold; color: #fff; }
+        .wind-key   { font-size: 11px; color: #555; margin-top: 2px; }
+        .compass-wrap {
+            margin: 16px auto 0;
+            display: flex;
+            justify-content: center;
+        }
+        .metar-box {
+            background: #0a0e1a;
+            border-radius: 6px;
             padding: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            color: #7ec8e3;
+            word-break: break-all;
+            margin-top: 14px;
+            text-align: left;
+            min-height: 36px;
+        }
+        .updated {
+            font-size: 11px;
+            color: #444;
+            margin-top: 8px;
+        }
+        .next-update {
+            font-size: 12px;
+            color: #555;
+            margin-top: 4px;
+        }
+        .history {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .history h2 {
+            color: #888;
+            font-size: 13px;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        .dot {
+            display: inline-block;
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: #4caf50;
+            animation: pulse 2s infinite;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50%       { opacity: 0.3; }
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th {
+            background: #131929;
+            color: #7ec8e3;
+            padding: 8px 10px;
+            font-size: 12px;
             text-align: center;
         }
         td {
-            padding: 8px;
+            padding: 7px 10px;
             text-align: center;
-            border-bottom: 1px solid #ddd;
+            border-bottom: 1px solid #1a2035;
+            font-size: 13px;
         }
-        tr:nth-child(even) { background: #e8e8e8; }
-        tr:nth-child(odd)  { background: #fff; }
-        #count {
-            text-align: center;
-            color: #888;
+        tr:nth-child(even) td { background: #0e1422; }
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 13px;
+        }
+        .badge.rwy27 { background: #0d3a4f; color: #4fc3f7; }
+        .badge.rwy09 { background: #1a3a1a; color: #81c784; }
+        .badge.calm  { background: #3a2a00; color: #ffb74d; }
+        .badge.vrb   { background: #2a1a3a; color: #ce93d8; }
+        .legend {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            font-size: 11px;
+            color: #555;
             margin-top: 10px;
+        }
+        .legend span { display: flex; align-items: center; gap: 5px; }
+        .legend-line {
+            display: inline-block;
+            width: 20px;
+            height: 3px;
+            border-radius: 2px;
         }
     </style>
 </head>
 <body>
-    <h1>Случайные числа</h1>
-    <div id="current">—</div>
-    <div id="count">Сгенерировано: 0</div>
 
+<h1>✈ Аэропорт Большое Савино — Пермь</h1>
+<p class="subtitle">ICAO: USPP · ВПП 09/27 (090°/270°) · Обновление каждую минуту</p>
+
+<div class="main-card">
+    <div class="runway-label">Активная ВПП</div>
+    <div class="runway-display loading" id="rwyDisplay">Загрузка...</div>
+    <div class="heading-sub" id="headingSub"></div>
+
+    <div class="wind-info">
+        <div class="wind-block">
+            <div class="wind-value" id="windDir">—</div>
+            <div class="wind-key">Откуда (°)</div>
+        </div>
+        <div class="wind-block">
+            <div class="wind-value" id="windSpd">—</div>
+            <div class="wind-key">Скорость (уз)</div>
+        </div>
+        <div class="wind-block">
+            <div class="wind-value" id="windGst">—</div>
+            <div class="wind-key">Порыв (уз)</div>
+        </div>
+        <div class="wind-block">
+            <div class="wind-value" id="headwind">—</div>
+            <div class="wind-key">Встречный (уз)</div>
+        </div>
+    </div>
+
+    <div class="compass-wrap">
+        <svg id="compass" width="160" height="160" viewBox="-80 -80 160 160"></svg>
+    </div>
+
+    <div class="legend">
+        <span><span class="legend-line" style="background:#4fc3f7"></span>ВПП 27 (270°)</span>
+        <span><span class="legend-line" style="background:#81c784"></span>ВПП 09 (090°)</span>
+        <span><span class="legend-line" style="background:#ef5350;"></span>Ветер (откуда)</span>
+    </div>
+
+    <div class="metar-box" id="metarRaw">—</div>
+    <div class="updated" id="updatedTime"></div>
+    <div class="next-update" id="nextUpdate"></div>
+</div>
+
+<div class="history">
+    <h2><span class="dot"></span>История обновлений</h2>
     <table>
         <thead>
             <tr>
-                <th>#</th>
-                <th>Число</th>
-                <th>Время</th>
+                <th>#</th><th>Время</th><th>ВПП</th><th>Ветер</th><th>Скорость</th>
             </tr>
         </thead>
-        <tbody id="tbody"></tbody>
+        <tbody id="histBody"></tbody>
     </table>
+</div>
 
-    <script>
-        let count = 0;
+<script>
+// Runway definitions for USPP
+const RUNWAYS = [
+    { name: '09', heading: 90  },
+    { name: '27', heading: 270 }
+];
 
-        function generate() {
-            const num = Math.floor(Math.random() * 100) + 1;
-            const now = new Date().toLocaleTimeString('ru-RU');
-            count++;
+let updateCount = 0;
+let countdown = 60;
+let countdownTimer = null;
 
-            document.getElementById('current').textContent = num;
-            document.getElementById('count').textContent = 'Сгенерировано: ' + count;
+function angleDiff(a, b) {
+    let d = Math.abs(a - b) % 360;
+    return d > 180 ? 360 - d : d;
+}
 
-            const tbody = document.getElementById('tbody');
-            const row = document.createElement('tr');
-            row.innerHTML = `<td>${count}</td><td><b>${num}</b></td><td>${now}</td>`;
-            tbody.insertBefore(row, tbody.firstChild);
+function getActiveRunway(windDir, windSpd, isVariable) {
+    if (isVariable) {
+        return { name: 'ПЕРЕМ.', cls: 'vrb', heading: null, headwind: 0 };
+    }
+    if (windSpd === 0 || windDir == null) {
+        return { name: 'ШТИЛЬ', cls: 'calm', heading: null, headwind: 0 };
+    }
+    let best = null, bestDiff = 999;
+    for (const rwy of RUNWAYS) {
+        const diff = angleDiff(windDir, rwy.heading);
+        if (diff < bestDiff) { bestDiff = diff; best = rwy; }
+    }
+    const rad = bestDiff * Math.PI / 180;
+    return {
+        name:      'ВПП ' + best.name,
+        cls:       'rwy' + best.name,
+        heading:   best.heading,
+        rwyNum:    best.name,
+        headwind:  Math.round(windSpd * Math.cos(rad)),
+        crosswind: Math.round(Math.abs(windSpd * Math.sin(rad))),
+        angleDiff: bestDiff
+    };
+}
 
-            // Оставляем только последние 50 записей
-            while (tbody.rows.length > 50) {
-                tbody.deleteRow(tbody.rows.length - 1);
-            }
+function drawCompass(windDir, activeHeading, activeCls) {
+    const svg = document.getElementById('compass');
+    svg.innerHTML = '';
+    const ns = 'http://www.w3.org/2000/svg';
+
+    function el(tag, attrs) {
+        const e = document.createElementNS(ns, tag);
+        for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+        return e;
+    }
+
+    // Outer ring
+    svg.appendChild(el('circle', { r: 72, fill: '#0a0e1a', stroke: '#2a3a4a', 'stroke-width': 2 }));
+    svg.appendChild(el('circle', { r: 56, fill: 'none', stroke: '#1a2535', 'stroke-width': 1 }));
+
+    // Degree ticks (every 30°)
+    for (let deg = 0; deg < 360; deg += 30) {
+        const rad = (deg - 90) * Math.PI / 180;
+        const r1 = 62, r2 = 70;
+        svg.appendChild(el('line', {
+            x1: Math.cos(rad) * r1, y1: Math.sin(rad) * r1,
+            x2: Math.cos(rad) * r2, y2: Math.sin(rad) * r2,
+            stroke: '#2a3a4a', 'stroke-width': 1
+        }));
+    }
+
+    // Cardinal labels
+    [['С', 0], ['В', 90], ['Ю', 180], ['З', 270]].forEach(([label, deg]) => {
+        const rad = (deg - 90) * Math.PI / 180;
+        const t = el('text', {
+            x: Math.cos(rad) * 48, y: Math.sin(rad) * 48 + 4,
+            'text-anchor': 'middle', fill: '#445', 'font-size': 11
+        });
+        t.textContent = label;
+        svg.appendChild(t);
+    });
+
+    // Runway line (east-west, 09/27)
+    svg.appendChild(el('line', {
+        x1: Math.cos(0) * 50, y1: 0,   // east (90° - 90° = 0 rad)
+        x2: -Math.cos(0) * 50, y2: 0,  // west
+        stroke: '#1e3a1e', 'stroke-width': 8, 'stroke-linecap': 'round'
+    }));
+    // Runway labels
+    ['09','27'].forEach((rwy, i) => {
+        const x = i === 0 ? 52 : -52;
+        const t = el('text', {
+            x, y: 4, 'text-anchor': 'middle',
+            fill: i === 0 ? '#81c784' : '#4fc3f7',
+            'font-size': 9, 'font-weight': 'bold'
+        });
+        t.textContent = rwy;
+        svg.appendChild(t);
+    });
+
+    // Active runway arrow
+    if (activeHeading !== null) {
+        const rad = (activeHeading - 90) * Math.PI / 180;
+        const color = activeCls === 'rwy27' ? '#4fc3f7' : '#81c784';
+        const ax = Math.cos(rad) * 44, ay = Math.sin(rad) * 44;
+        svg.appendChild(el('line', {
+            x1: -ax * 0.7, y1: -ay * 0.7,
+            x2: ax, y2: ay,
+            stroke: color, 'stroke-width': 3, 'stroke-linecap': 'round'
+        }));
+        // Arrowhead
+        const hw = 9;
+        const p = `${ax},${ay} ${ax - Math.cos(rad - 0.4) * hw},${ay - Math.sin(rad - 0.4) * hw} ${ax - Math.cos(rad + 0.4) * hw},${ay - Math.sin(rad + 0.4) * hw}`;
+        svg.appendChild(el('polygon', { points: p, fill: color }));
+    }
+
+    // Wind direction arrow (dashed red) — FROM this direction
+    if (windDir != null && windDir > 0) {
+        const wRad = (windDir - 90) * Math.PI / 180;
+        // Arrow comes FROM windDir toward center
+        const wx = Math.cos(wRad) * 46, wy = Math.sin(wRad) * 46;
+        svg.appendChild(el('line', {
+            x1: wx, y1: wy, x2: wx * 0.15, y2: wy * 0.15,
+            stroke: '#ef5350', 'stroke-width': 2, 'stroke-dasharray': '4,3'
+        }));
+        // Arrowhead near center
+        const endX = wx * 0.15, endY = wy * 0.15;
+        const rad2 = Math.atan2(endY - wy, endX - wx);
+        const hw2 = 8;
+        const p2 = `${endX},${endY} ${endX - Math.cos(rad2 - 0.4) * hw2},${endY - Math.sin(rad2 - 0.4) * hw2} ${endX - Math.cos(rad2 + 0.4) * hw2},${endY - Math.sin(rad2 + 0.4) * hw2}`;
+        svg.appendChild(el('polygon', { points: p2, fill: '#ef5350' }));
+        // Wind origin dot
+        svg.appendChild(el('circle', { cx: wx, cy: wy, r: 3, fill: '#ef5350' }));
+    }
+
+    // Center dot
+    svg.appendChild(el('circle', { r: 4, fill: '#fff' }));
+}
+
+async function fetchMETAR() {
+    const url = '/api/metar?ids=USPP&format=json';
+    try {
+        const resp = await fetch(url);
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        const data = await resp.json();
+        if (!data || data.length === 0) throw new Error('METAR не получен');
+
+        const m = data[0];
+        const rawOb = m.rawOb || '—';
+        const isVariable = rawOb.includes(' VRB');
+        const windDir  = isVariable ? null : (m.wdir ?? null);
+        const windSpd  = m.wspd ?? 0;
+        const windGst  = m.wgst ?? null;
+
+        const active = getActiveRunway(windDir, windSpd, isVariable);
+
+        // Update display
+        const disp = document.getElementById('rwyDisplay');
+        disp.textContent = active.name;
+        disp.className = 'runway-display ' + active.cls;
+
+        if (active.heading) {
+            document.getElementById('headingSub').textContent =
+                `Курс посадки ${active.heading}° · Боковой ветер ${active.crosswind} уз`;
+        } else if (active.cls === 'vrb') {
+            document.getElementById('headingSub').textContent = 'Переменный ветер — ВПП по решению диспетчера';
+        } else {
+            document.getElementById('headingSub').textContent = 'Ветер отсутствует — любая ВПП';
         }
 
-        generate();
-        setInterval(generate, 1000);
-    </script>
+        document.getElementById('windDir').textContent =
+            isVariable ? 'VRB' : (windSpd === 0 ? 'Штиль' : (windDir + '°'));
+        document.getElementById('windSpd').textContent = windSpd + ' уз';
+        document.getElementById('windGst').textContent = windGst ? windGst + ' уз' : '—';
+        document.getElementById('headwind').textContent = active.headwind ? active.headwind + ' уз' : '—';
+        document.getElementById('metarRaw').textContent = rawOb;
+
+        const now = new Date();
+        document.getElementById('updatedTime').textContent =
+            'Обновлено: ' + now.toLocaleTimeString('ru-RU') +
+            (m.reportTime ? ' · METAR от: ' + m.reportTime : '');
+
+        drawCompass(windDir, active.heading, active.cls);
+        addHistory(active, windDir, windSpd, isVariable);
+
+    } catch (e) {
+        const disp = document.getElementById('rwyDisplay');
+        disp.textContent = 'Нет связи';
+        disp.className = 'runway-display error';
+        document.getElementById('headingSub').textContent = '';
+        document.getElementById('metarRaw').textContent = 'Ошибка: ' + e.message;
+        drawCompass(null, null, null);
+    }
+}
+
+function addHistory(active, windDir, windSpd, isVariable) {
+    updateCount++;
+    const tbody = document.getElementById('histBody');
+    const now = new Date().toLocaleTimeString('ru-RU');
+    const windStr = isVariable ? 'VRB' : (windSpd === 0 ? 'Штиль' : windDir + '°');
+    const spdStr  = windSpd + ' уз';
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td>${updateCount}</td>
+        <td>${now}</td>
+        <td><span class="badge ${active.cls}">${active.name}</span></td>
+        <td>${windStr}</td>
+        <td>${spdStr}</td>
+    `;
+    tbody.insertBefore(row, tbody.firstChild);
+    while (tbody.rows.length > 30) tbody.deleteRow(tbody.rows.length - 1);
+}
+
+function startCountdown() {
+    clearInterval(countdownTimer);
+    countdown = 60;
+    countdownTimer = setInterval(() => {
+        countdown--;
+        document.getElementById('nextUpdate').textContent =
+            'Следующее обновление через ' + Math.max(0, countdown) + ' сек';
+    }, 1000);
+}
+
+// Start
+fetchMETAR();
+startCountdown();
+setInterval(() => { fetchMETAR(); startCountdown(); }, 60000);
+</script>
 </body>
 </html>
