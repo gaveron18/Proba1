@@ -170,7 +170,7 @@
         }
         /* DB History section */
         .db-section {
-            max-width: 500px;
+            max-width: 750px;
             margin: 30px auto 0;
         }
         .db-section h2 {
@@ -184,7 +184,7 @@
             display: flex;
             gap: 8px;
             align-items: center;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
             margin-bottom: 12px;
         }
         .filter-row label { font-size: 12px; color: #888; }
@@ -196,7 +196,7 @@
             padding: 6px 10px;
             font-size: 12px;
             flex: 1;
-            min-width: 160px;
+            min-width: 0;
         }
         .btn {
             background: #1a6fa8;
@@ -209,6 +209,9 @@
             white-space: nowrap;
         }
         .btn:hover { background: #155d8e; }
+        .btn-green { background: #2e9e5b; color: #fff; border: none; border-radius: 6px; padding: 7px 16px; font-size: 13px; cursor: pointer; white-space: nowrap; }
+        .btn-green:hover { background: #267a49; }
+        .btns { display: flex; gap: 6px; flex-shrink: 0; }
         .stats-row {
             display: flex;
             gap: 12px;
@@ -298,7 +301,10 @@
         <input type="datetime-local" id="fromDt">
         <label>По</label>
         <input type="datetime-local" id="toDt">
-        <button class="btn" onclick="loadDB()">Загрузить</button>
+        <div class="btns">
+          <button class="btn" onclick="loadDB()">Загрузить</button>
+          <button class="btn-green" onclick="exportXLSX()">⬇ Экспорт</button>
+        </div>
     </div>
     <div class="stats-row" id="statsRow" style="display:none">
         <div class="stat-card">
@@ -333,7 +339,7 @@ const RUNWAYS = [
 ];
 
 let updateCount = 0;
-let countdown = 60;
+let countdown = 900;
 let countdownTimer = null;
 
 // 1 knot = 0.514444 m/s
@@ -559,7 +565,7 @@ function addHistory(active, windDir, windSpd, isVariable) {
 
 function startCountdown() {
     clearInterval(countdownTimer);
-    countdown = 60;
+    countdown = 900;
     countdownTimer = setInterval(() => {
         countdown--;
         document.getElementById('nextUpdate').textContent =
@@ -575,6 +581,14 @@ function toUTC(localStr) {
     return new Date(localStr).toISOString().replace('.000Z', 'Z');
 }
 
+function exportXLSX() {
+    const from = toUTC(document.getElementById('fromDt').value);
+    const to   = toUTC(document.getElementById('toDt').value);
+    if (!from || !to) { alert('Выберите период'); return; }
+    window.location.href =
+        `/api/export?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`;
+}
+
 async function loadDB() {
     const from = toUTC(document.getElementById('fromDt').value);
     const to   = toUTC(document.getElementById('toDt').value);
@@ -585,9 +599,11 @@ async function loadDB() {
     document.getElementById('statsRow').style.display = 'none';
 
     try {
+        const diffMs = new Date(to) - new Date(from);
+        const limit  = Math.min(Math.ceil(diffMs / 60000) + 10, 10000);
         const [histResp, statsResp] = await Promise.all([
-            fetch(`/proba1/api/history?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`),
-            fetch(`/proba1/api/stats?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`)
+            fetch(`/api/history?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&limit=${limit}`),
+            fetch(`/api/stats?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`)
         ]);
         const rows  = await histResp.json();
         const stats = await statsResp.json();
@@ -641,7 +657,7 @@ async function loadDB() {
 // Start
 fetchMETAR();
 startCountdown();
-setInterval(() => { fetchMETAR(); startCountdown(); }, 60000);
+setInterval(() => { fetchMETAR(); startCountdown(); }, 900000);
 </script>
 </body>
 </html>
